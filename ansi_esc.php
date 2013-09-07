@@ -22,22 +22,22 @@ $_____ansi_map = [
     'bold'                  =>  1, // Bold or increased intensity
     'faint'                 =>  2, // Faint (decreased intensity) - not widely supported
     'italic'                =>  3, // Italic: on - not widely supported. Sometimes treated as inverse.
-    'underline'         =>  4, // Underline: Single
+    'underline'             =>  4, // Underline: Single
 
     'blink'                 =>  5, // Blink: Slow - less than 150 per minute
-    'blinkslow'         =>  5, // Blink: Slow - less than 150 per minute
+    'blinkslow'             =>  5, // Blink: Slow - less than 150 per minute
 
-    'blinkfast'         =>  6, // Blink: Rapid - MS-DOS ANSI.SYS; 150 per minute or more; not widely supported
+    'blinkfast'             =>  6, // Blink: Rapid - MS-DOS ANSI.SYS; 150 per minute or more; not widely supported
 
-    'negative'          =>  7, // Image: Negative - inverse or reverse; swap foreground and background (reverse video)
-    '~positive'         =>  7, // Image: Negative - inverse or reverse; swap foreground and background (reverse video)
+    'negative'              =>  7, // Image: Negative - inverse or reverse; swap foreground and background (reverse video)
+    '~positive'             =>  7, // Image: Negative - inverse or reverse; swap foreground and background (reverse video)
 
     'conceal'               =>  8, // Conceal - not widely supported
     '~reveal'               =>  8, // Conceal - not widely supported
 
     'crossed'               =>  9, // Crossed-out - Characters legible, but marked for deletion. Not widely supported.
 
-    'font/default'  => 10, // Primary(default) font
+    'font/default'          => 10, // Primary(default) font
     'font/0'                => 10, // Primary(default) font
 
     // 11-19 - n-th alternate font  Select the n-th alternate font. 14 being the fourth alternate font, up to 19 being the 9th alternate font.
@@ -61,9 +61,9 @@ $_____ansi_map = [
     '~faint'                => 22, // Normal color or intensity - neither bold nor faint
 
     '~italic'               => 23, // Not italic, not Fraktur
-    '~fraktur'          => 23, // Not italic, not Fraktur
+    '~fraktur'              => 23, // Not italic, not Fraktur
 
-    '~underline'        => 24, // Underline: None - not singly or doubly underlined
+    '~underline'            => 24, // Underline: None - not singly or doubly underlined
     '~blink'                => 25, // Blink: off
 
     // 26 -  Reserved
@@ -71,7 +71,7 @@ $_____ansi_map = [
     'positive'          => 27, // Image: Positive
     '~negative'         => 27, // Image: Positive
 
-    'reveal'                => 28, // Reveal - conceal off
+    'reveal'            => 28, // Reveal - conceal off
     '~conceal'          => 28, // Reveal - conceal off
 
     '~crossed'          => 29, // Not crossed out
@@ -84,24 +84,24 @@ $_____ansi_map = [
     'text/green'        => 32,
     'text/yellow'       => 33,
     'text/blue'         => 34,
-    'text/magenta'  => 35,
+    'text/magenta'      => 35,
     'text/cyan'         => 36,
     'text/white'        => 37,
 
     // Unsure how to handle these.
     // 38 - Set xterm-256 text color[dubious – discuss] - next arguments are 5;x where x is color index (0..255)
 
-    'text/default'  => 39, // Default text color - implementation defined (according to standard)
+    'text/default'      => 39, // Default text color - implementation defined (according to standard)
 
     // 40–47 - Set background color 40 + x, where x is from the color table below
     // 0 Black 1 Red 2 Green 3 Yellow 4 Blue 5 Magent 6 Cyan 7 White
     'bg/black'          => 40,
-    'bg/red'                => 41,
+    'bg/red'            => 41,
     'bg/green'          => 42,
     'bg/yellow'         => 43,
-    'bg/blue'               => 44,
+    'bg/blue'           => 44,
     'bg/magenta'        => 45,
-    'bg/cyan'               => 46,
+    'bg/cyan'           => 46,
     'bg/white'          => 47,
 
     // Unsure how to handle these
@@ -111,12 +111,12 @@ $_____ansi_map = [
 
     // 50 - Reserved
 
-    'frame'                 => 51, // Framed
+    'frame'             => 51, // Framed
     'encircle'          => 52, // Encircled
     'overline'          => 53, // Overlined
 
     '~encircle'         => 54, // Not framed or encircled
-    '~frame'                => 54, // Not framed or encircled
+    '~frame'            => 54, // Not framed or encircled
 
     '~overline'         => 55, // Not overlined
 
@@ -161,7 +161,6 @@ $_____ansi_map_preprocess = [
 $_____ansi_map_sorted = $_____ansi_map;
 $_____ansi_map_keys = array_map('strlen', array_keys($_____ansi_map));
 array_multisort($_____ansi_map_keys, SORT_DESC, $_____ansi_map);
-
 // or uksort($_____ansi_map, create_function('$a,$b', 'return strlen($a) < strlen($b);'));
 
 function ansi_esc($input = false) {
@@ -174,13 +173,4 @@ function ansi_esc($input = false) {
         $input = str_replace(array_keys($_____ansi_map_preprocess), $_____ansi_map_preprocess, $input);
 
         return "\033[" . str_replace(array_keys($_____ansi_map), $_____ansi_map, $input) . "m";
-}
-
-function ansi_esc_test() {
-    global $_____ansi_map_sorted;
-
-    foreach($_____ansi_map_sorted as $k => $v) {
-        echo str_pad($k, 15, ' ', STR_PAD_LEFT) . ': ';
-        echo ansi_esc($k) . 'a large piece of cake was eaten by me' . ansi_esc() . "\n";
-    }
 }
