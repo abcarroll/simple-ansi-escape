@@ -1,23 +1,22 @@
 <?php
 /*
-    Copyright (c) 2013, Armond B. Carroll ben@hl9.net
-    All rights reserved.
+  * This file is a part of the simple-ansi-escape package.
+  *
+  * Copyright (c) 2013, Armond B. Carroll <ben@hl9.net>
+  * Distributed under the BSD License.  For full license text, please
+  * view the LICENSE file that was distributed with this source code.
+  *
+  * The entire escape code list is available here:
+  * http://en.wikipedia.org/wiki/ANSI_escape_code
+  *
+  * All descriptions of ANSI codes are taken DIRECTLY from this list.
+  * I claim no ownership to these descriptions.
+  * They are mostly unmodified, directly from Wikipedia.
+  * Please help improve the 'ANSI Escape Code' Wikipedia page.
+  */
 
-    Distributed under the BSD License, which can be found here:
-    http://opensource.org/licenses/BSD-2-Clause
-
-    ----
-
-    The entire escape code list is available here:
-    http://en.wikipedia.org/wiki/ANSI_escape_code
-
-    All descriptions of ANSI codes are taken DIRECTLY from this list.
-    I claim no ownership to these descriptions.
-    They are unmodified directly from wikipedia.
-    Please help improve the ANSI escape codes wikipedia page.
-*/
-
-$_____ansi_map = [
+class SimpleAnsiEscape {
+  static public $ansi_map = [
     'reset'                 =>  0, // Reset / Normal - all attributes off
     'bold'                  =>  1, // Bold or increased intensity
     'faint'                 =>  2, // Faint (decreased intensity) - not widely supported
@@ -53,7 +52,7 @@ $_____ansi_map = [
 
     'fraktur'               => 20, // Fraktur - hardly ever supported
 
-    'dblunderline'  => 21, // Bold: off or Underline: Double - bold off not widely supported, double underline hardly ever
+    'dblunderline'          => 21, // Bold: off or Underline: Double - bold off not widely supported, double underline hardly ever
     // Didn't know exactly how to handle this as ~bold or 22 is more widely supported
     '~~bold'                => 21, // Bold: off or Underline: Double - bold off not widely supported, double underline hardly ever
 
@@ -132,12 +131,12 @@ $_____ansi_map = [
     // 100–109 - Set background color, high intensity - aixterm (not in standard)
 
     // Stop ANSI Codes.
-];
+  ];
 
-$_____ansi_map_preprocess = [
-    // These are some trival shortcuts:
-    ',' => ';', // Allows us to use commas as the delimeter
 
+  // These are some trival shortcuts.  Note that the ',' => ';' replacement is hardcoded since it is only
+  // required when $format is passed as a string, and by doing so we avoid redundant calls to str_replace()
+  static public $preprocess_replace = [
     '!' => '~', // Logical NOT style (so !bold is equiv to ~bold)
     '^' => '~', // Regex NOT Style (so ^bold is equiv to ~bold)
 
@@ -156,21 +155,31 @@ $_____ansi_map_preprocess = [
 
     // Too bad fraktur is rarely supported
     'gothic' => 'fraktur',
-];
+  ];
 
-$_____ansi_map_sorted = $_____ansi_map;
-$_____ansi_map_keys = array_map('strlen', array_keys($_____ansi_map));
-array_multisort($_____ansi_map_keys, SORT_DESC, $_____ansi_map);
-// or uksort($_____ansi_map, create_function('$a,$b', 'return strlen($a) < strlen($b);'));
+  static function AnsiEscape($format = 'reset', $wrap_around = '') {
+    $preprocess_replace_keys = array_keys(self::$preprocess_replace);
+    $ansi_map_keys = array_keys(self::$ansi_map);
 
-function ansi_esc($input = false) {
-        global $_____ansi_map, $_____ansi_map_preprocess;
+    // If it's not an array already, convert it to one
+    if(!is_array($format)) {
+      $format = str_replace(',', ';', $format); // Allows us to use comma as delimiter, see note above
+      $format = explode(';', $format);
+    }
 
-        if($input === false) {
-            $input = 'reset';
-        }
+    foreach($format as &$f) {
+      $f = str_replace($preprocess_replace_keys, self::$preprocess_replace, trim($f));
+	  $f = self::$ansi_map[$f];
+	 }
 
-        $input = str_replace(array_keys($_____ansi_map_preprocess), $_____ansi_map_preprocess, $input);
+    if(!empty($wrap_around)) {
+      $wrap_around .= self::AnsiEscape();
+    }
 
-        return "\033[" . str_replace(array_keys($_____ansi_map), $_____ansi_map, $input) . "m";
+    return "\033[" . implode(';', $format) . "m$wrap_around";
+  }
+}
+
+function ansi_esc($format = 'reset', $wrap_around = '') {
+  return SimpleAnsiEscape::AnsiEscape($format, $wrap_around);
 }
