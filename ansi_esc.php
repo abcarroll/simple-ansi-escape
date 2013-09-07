@@ -159,7 +159,6 @@ class SimpleAnsiEscape {
 
   static function AnsiEscape($format = 'reset', $wrap_around = '') {
     $preprocess_replace_keys = array_keys(self::$preprocess_replace);
-    $ansi_map_keys = array_keys(self::$ansi_map);
 
     // If it's not an array already, convert it to one
     if(!is_array($format)) {
@@ -169,8 +168,8 @@ class SimpleAnsiEscape {
 
     foreach($format as &$f) {
       $f = str_replace($preprocess_replace_keys, self::$preprocess_replace, trim($f));
-	  $f = self::$ansi_map[$f];
-	 }
+      $f = self::$ansi_map[$f];
+    }
 
     if(!empty($wrap_around)) {
       $wrap_around .= self::AnsiEscape();
