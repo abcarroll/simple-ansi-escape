@@ -65,9 +65,9 @@ The same problem being, there is no reset last, or way to "wrap" formatting arou
 
 ### Always reset
 
-One last thing to note, when you use ANSI Escape Codes, you are sending escape sequences that are interpreted directly by the shell.  The shell does not care or explicitly do a rest when a process (php-cli) ends, therefore if you do not end your formatting, the formatting will persist after your script terminates.  To test this simply call `ansi_esc('text/green')` in a script by itself.  Once your script terminates, your shell prompt and any subsequent commands will still be green. 
+One last thing to note, when you use ANSI Escape Codes, you are sending escape sequences that are interpreted directly by the terminal.  The terminal does not care or explicitly do a rest when a process (php-cli) ends, therefore if you do not end your formatting, the formatting will persist after your script terminates.  To test this simply call `ansi_esc('text/green')` in a script by itself.  Once your script terminates, your terminal prompt and any subsequent commands will still be green. 
 
-In development, if you forget to reset an escape sequence and are left with an ugly shell prompt, simply type `reset` at your shell to reset it.  __Do NOT__ rely on this feature for production scripts.
+In development, if you forget to reset an escape sequence and are left with an ugly prompt, simply type `reset` at your shell to reset it.  __Do NOT__ rely on this feature for production scripts.
 
 ## Formatting Syntax, Names
 
