@@ -16,7 +16,21 @@
   * Please help improve the 'ANSI Escape Code' Wikipedia page.
   */
 
+namespace SimpleAnsiEscape;
+
+    /**
+     * SimpleAnsiEscape is a simple PHP function called ansi_esc() that uses short sequences to be able to quickly
+     * and intuitively use ANSI escape codes (color, bold) in php-cli scripts
+     */
+
+/**
+ * Class SimpleAnsiEscape
+ * @package SimpleAnsiEscape
+ */
 class SimpleAnsiEscape {
+    /**
+     * @var array A complete list of shortcut codes to their ANSI byte equivalent.
+     */
     static public $ansi_map = [
         // Reset / Normal - all attributes off
         'reset'        => 0,
@@ -138,9 +152,13 @@ class SimpleAnsiEscape {
     ];
 
 
-    // These are some trival shortcuts.  Note that the ',' => ';' replacement is hardcoded since it is only
-    // required when $format is passed as a string, and by doing so we avoid redundant calls to str_replace()
+    /**
+     * @var array Trivial shortcuts and aliases that are handled before $ansi_map replacements.
+     */
     static public $preprocess_replace = [
+        // Note that the ',' => ';' replacement is hardcoded since it is only required when $format is passed
+        // as a string, and by doing so we avoid redundant calls to str_replace()
+
         '!'             => '~', // Logical NOT style (so !bold is equiv to ~bold)
         '^'             => '~', // Regex NOT Style (so ^bold is equiv to ~bold)
 
@@ -159,7 +177,17 @@ class SimpleAnsiEscape {
         'gothic'        => 'fraktur',
     ];
 
-    static function AnsiEscape($format = 'reset', $wrap_around = '') {
+    /**
+     *
+     *
+     * @param string $format A comma or semi-colon separated string of formats to apply.  For example 'color/blue,bold'
+     * @param string $wrap_around Optional parameter that indicates text to wrap in the supplied formatting.  If
+     *                            supplied, the output will be <Formatting><Text Supplied><Reset>.
+     *
+     * @return string The ANSI escape code sequence, and if $wrap around is supplied, followed by the supplied text
+     *                and a ANSI escape reset.
+     */
+    static public function ansiEscape($format = 'reset', $wrap_around = '') {
         $preprocess_replace_keys = array_keys(self::$preprocess_replace);
 
         // If it's not an array already, convert it to one
@@ -182,5 +210,5 @@ class SimpleAnsiEscape {
 }
 
 function ansi_esc($format = 'reset', $wrap_around = '') {
-    return SimpleAnsiEscape::AnsiEscape($format, $wrap_around);
+    return \SimpleAnsiEscape\SimpleAnsiEscape::AnsiEscape($format, $wrap_around);
 }
