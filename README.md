@@ -1,89 +1,164 @@
-# simple-ansi-escape
+Simple ANSI Escape
+=======================
 
+Using ANSI escape codes, you can add color and formatting to terminals used by php5-cli. Simple-Ansi-Escape is a simple
+class to turn the obscure ANSI escape codes into friendly aliases that are easy to remember.
 
-## What it does and does not
-This is a simple PHP function called ansi_esc() that uses short sequences to be able to quickly and intuitively use ANSI escape codes (color, bold) in php-cli scripts.
+Simple-Ansi-Escape tries to be intuitive as possible and is very flexible in it's parameters.  As the name implies, it
+is also very simple.  There is only one class definition that contains one static public method, `ansiEscape()`.
+Simple-Ansi-Escape supports most standard ANSI escape codes and some nonstandard ones.  It does not, however, support
+xterm-256 extensions (yet).
 
-Included with it, is a function ansi_esc_test() and an additional file test.php to help you get started.
+## Simple Usage
 
-- Supports most standard ANSI Escape Codes and some non-standard ones
+A separate, more in-depth and hands-on tutorial is distributed with the repository, see `extras/tutorial.php`.  Run it,
+and read the source code.
 
-- Does not support xterm-256 extensions, but it could be added
-
-- Tries to be intuitive, and correct you where possible, and allow for flexible syntax so "it just feels right"
-
-## How to use
-
-Simply call `ansi_esc( array|string $formatting, $string = '')` when ever you need colors or other ANSI formatting.  The function comes in two forms, for example:
-
-### One Parameter
-
-```
-echo ansi_esc('text/green') . "This is how you "
-  . ansi_esc('bold') . " nest " . ansi_esc('~bold') . " formatting . " . ansi_esc();
-```
-
-In this call: 
-* We used the `text/green` ansi alias which makes the font green.
-* We call it again with `bold` to make everything afterwards bold.
-* We decide we no longer want the text to to be bold, so we use the inversion-bold `~bold` to turn it off.  
-* We never closed `text/green` so the word "formatting", and anything after that still green
-* We want to turn off everything, so a call to `ansi_esc()` with no parameters resets _all_ colors and formatting.
-
-### Two parameters
-
-The two parameter syntax is a shorthand intended, for example, single worlds, or if you want an entire block of text to be one and only one formatting.  With the two parameters, the first parameter being the format, and second parameter you want to "wrap it around".  For example:
-
-```
-echo ansi_escape('text/blue', "This entire line is blue.") . "\n";
-echo ansi_escape('bold', "This entire line is bold, but not blue.'); 
-echo ansi_escape('With two parameters, it calls the reset for you at the end") . "\n";
+There is a single class, `SimpleAnsiEscape` that defines one static public function, ``SimpleAnsiEscape::ansiEscape()``.
+If you are using a PSR-4 compatible auto-loader, you can get started with some gaudy yellow blinking text with just two
+lines:
+ 
+```php
+use SimpleAnsiEscape\SimpleAnsiEscape as esc;
+echo esc::ansiEscape('color/yellow, blink', "I hope you enjoy Simple-Ansi-Escape!");
 ```
 
-Another way to say it, is simply `ansi_esc()` when called with both parameters is short hand, but exactly equivalent to: 
-```
-echo ansi_esc('text/blue') . "This entire line is blue" . ansi_esc() . "\n";
-```
-
-### Mixing Forms & Incorrect Nesting
-
-There is no "reset last" ANSI Escape sequence, only "reset all".  Since the function does not keep track of what formatting you use, it has no way of knowing how to revert it if you nest the two-parameter, or mix forms in a single formatting.  This is not a limitation of this library, but more of a limitation of ANSI Escape Codes.  Take for example the code:
-
-```
-echo ansi_esc('text/green', "This is NOT how you " . ansi_esc('bold', 'nest') . " properly!");
+The full prototype is, in namespace `SimpleAnsiEscape`:
+```php
+SimpleAnsiEscape::ansiEscape( [ array|string $formatting, [ $wrapAround = null ] ] )
 ```
 
-In the above example, the inner `ansi_esc()` will output a reset all ansi escape sequence, so you will end up "This is NOT how you" as green, "nest" as both green and bolded, and "properly" as reset completely to non-green (default color) and non-bolded.
+`::ansiEscape()` tries to be very flexible in what you pass it.  The first parameter can be either an array with
+one or more array elements, or a string.  In it's array form, each array element should correspond to a single *escape
+alias* such as "color/yellow" in the previous example.  In it's string form, you can pass comma-, space- or 
+semicolon-delimited *escape aliases*.  Examples:
 
-Likewise, the following code will behave not as one would expect, exactly as the above example:
+```php
+// In the array form, one-parameter syntax:
+echo esc::ansiEscape(array('color/blue', 'faint', 'underline')), "I hope you enjoy Simple-Ansi-Escape!");
 
+// The same thing, as a string:
+echo esc::ansiEscape('color/blue, faint, underline', "I hope you enjoy Simple-Ansi-Escape!");
+
+// You can use commas, spaces, or semi-colons as well.  Although it looks poor, even
+// mixing and matching will not confuse Simple-Ansi-Escape:
+echo esc::ansiEscape('color/red faint; underline, bold', "I hope you enjoy Simple-Ansi-Escape!");
 ```
-echo ansi_esc('text/green') . "This is NOT how you " . ansi_esc('bold', 'nest') . " properly!" . ansi_esc();
-```
 
-The same problem being, there is no reset last, or way to "wrap" formatting around only the passed input text.  The two parameter `ansi_esc()` calls a 'reset all' after it has output the text in the specified formatting.
+With no parameters, it is synonymous with `::ansiEscape('reset')`` and will reset all open-ended formatting.
+
+You can also use `::ansiEscape()` with a single parameter to output only the escape codes.  When called with a single
+parameter, no ANSI reset is called automatically.  While you need to call reset yourself (by calling `::ansiEscape()` 
+with no parameters), but it makes nesting a lot easier:
+
+Note that you can not nest within the same function call, but it's easy to nest using a couple of extra calls:
+```php
+// This is INCORRECT.  The inner escape will terminate formatting and ' properly' will be
+// in the default terminal style.
+echo esc::ansiEscape(
+    'text/green', 
+    "This is NOT how you " . ansi_esc('bold', 'nest') . " properly!"
+);
+
+// This is CORRECT.  We're build the value in the proper linear order:
+echo esc::ansiEscape('text/green') . "This is how you ". ansi_esc('bold')
+    . "properly " . ansi_esc('~bold') . "next formatting." . ansi_esc();
+```
 
 ### Always reset
 
-One last thing to note, when you use ANSI Escape Codes, you are sending escape sequences that are interpreted directly by the terminal.  The terminal does not care or explicitly do a rest when a process (php-cli) ends, therefore if you do not end your formatting, the formatting will persist after your script terminates.  To test this simply call `ansi_esc('text/green')` in a script by itself.  Once your script terminates, your terminal prompt and any subsequent commands will still be green. 
+A final note, when using ANSI escape codes, you are sending tiny textual sequences that are interpreted by your
+terminal.  The terminal has no knowledge when php5-cli terminates, therefore you must ensure you do not have any 
+open-ended escape codes, or your formatting will spill out into the terminal, even after your script terminates.
 
-In development, if you forget to reset an escape sequence and are left with an ugly prompt, simply type `reset` at your shell to reset it.  __Do NOT__ rely on this feature for production scripts.
+If you have a colorful `PS1` shell environmental variable, you *may* not notice this, so please be mindful!  During
+development, if you make a mess of your terminal, simply run the `reset` shell command to start fresh.
 
 ## Formatting Syntax, Names
 
-Formatting is a semi-colon, or comma delimited list of ANSI Escape Code names.  This software translates them into the required numeric values.  You can also pass an array instead of a delimited string, such as `ansi_esc(['text/green', 'blink'])` 
+You can use the characters `~`, `!` or `^` for negate.  For example `~bold`, `!bold` and `^bold` are all equivalent in
+that they remove bold formatting.  Not all sequences can be negated.  Background and text use 'bg/default', and 
+'color/default' to reset back to defaults.  For those that do not have a negate syntax, you must simply send an ANSI
+reset.  
 
-You can use the characters `~`, `!` or `^` for negate.  For example `~bold`, `!bold` and `^bold` are all equivalent in that they remove bold formatting.  Not all sequences can be negated.  For those that do not have a negate syntax, you must simply `reset` (or call `ansi_esc()` with no parameters, which is short-hand for `ansi_esc('reset')`.
+## Escape Aliases
 
-To get the complete list of names and  aliases available for use, simply look at the ``ansi_esc.php`` file.  Many sequence have aliases.  For example `negative` is equivalent exactly to saying `~positive`.  As well as, for example, `text/cyan` is equivalent to `text/lightblue`.
+Escape aliases are the heart of AnsiEscape.  There is a supplied script, in `extras/printEscAliases.php` which
+will print a table much like the ones below, and show demo typeset instead so you can test your terminal's 
+capabilities.
 
-## TODO
+### Most important (compatible) escape alises:
 
-* Clean up this README.md.  It is more informative than the one before it, but it's badly put together and hard to follow.  Make a table with available names & aliases.
-* Namespaces
-* Error handling
-* Possibly more efficient way to do the replacements in `ansi_esc()`
-* More support for non-standard escapes, such as xterm-256 extensions.
+   Escape Alias | Notes               
+|--------------:|:----------------------------------------------------------------------------------------------
+|         reset | All formatting reset to baseline.                                                            |
+|  text/default | Change text (foreground) color to default.  Negate any previously set color.                 |
+|    text/black | Change text (foreground) color to black. Alias color/black.                                  |
+|     text/blue | Change text (foreground) color to blue.  Alias color/blue.                                   |
+|     text/cyan | Change text (foreground) color to cyan.  Alias color/cyan, color/lightblue.                  |
+|    text/green | Change text (foreground) color to green.  Alias color/green.                                 |
+|  text/magenta | Change text (foreground) color to magenta.  Alias color/magenta, color/pink.                 |
+|      text/red | Change text (foreground) color to red.                                                       |
+|    text/white | Change text (foreground) color to white.                                                     |
+|   text/yellow | Change text (foreground) color to yellow.                                                    |
+|    bg/default | Change text (foreground) color default.  Negate any previously set background color.         |
+|      bg/black | Change background color to black.                                                            |
+|       bg/blue | Change background color to blue.                                                             |
+|       bg/cyan | Change background color to cyan.  Alias bg/lightblue.                                        |
+|      bg/green | Change background color to green.                                                            |
+|    bg/magenta | Change background color to magenta.  Alias bg/pink.                                          |
+|        bg/red | Change background color to red.                                                              |
+|      bg/white | Change background color to white.                                                            |
+|     bg/yellow | Change background color to yellow.                                                           |
+|         blink | Sets the text to a blink.  xterm and many terminals support this, but not all.               |
+|        ~blink | Blink off.                                                                                   |
+|          bold | Sets the text to bold typeface.                                                              |
+|         ~bold | Returns the text to normal intensity.  Same code as ~faint.                                  |
+|       conceal | Conceals text.  Sets text and background to the same as used by terminal.                    |
+|      ~conceal | Reveals text.  Alias for '~reveal'.                                                          |
+|        reveal | Reveals text.  Alias for '~conceal'.                                                         |
+|       ~reveal | Conceals text.  Alias for 'conceal'.                                                         |
+|       crossed | Strike-through text.  Well supported.                                                        |
+|      ~crossed | Not strike-through text.                                                                     |
+|         faint | Faint / dim text.                                                                            |
+|        ~faint | Returns to the text to normal intensity.  Same code as ~bold.                                |
+|        italic | Italics typeface.  Not as well supported as most, but supported by xterm.                    |
+|       ~italic | Not italics or fraktor.  Same code as ~fraktor.                                              |
+|      negative | Inverts background and foreground (text) color.                                              |
+|     ~positive | Alias for negative - negate positive.                                                        |
+|     ~negative | Alias for positive - negate negative.                                                        |
+|      positive | Returns background from inversion.                                                           |
+|      overline | Overline over text.  Not as well supported.                                                  |
+|     ~overline | Not overlined.                                                                               |
+|     underline | Underline text.                                                                              |
+|    ~underline | Not underline or double underline.  Use to negate double underline as well.                  |
+
+### Lesser Supported and Non-Standard Escape Codes
+These are escape codes that I've never seen work in a modern terminal.  You may have better luck.
+
+|  Escape Alias | Notes                                                                                        |
+|--------------:|:----------------------------------------------------------------------------------------------
+|     blinkfast |                                                                                              |
+|     blinkslow | In xterm, this will cause a blink but at the exact same rate as standard blink.              |
+|        ~~bold | This is a variant for bold off (21) which isn't as widely supported.                         |
+|  dblunderline |                                                                                              |
+|      encircle |                                                                                              |
+|     ~encircle |                                                                                              |
+|        font/0 | I've never seen any of these fonts work in xterm.                                            |
+|        font/1 |                                                                                              |
+|        font/2 |                                                                                              |
+|        font/3 |                                                                                              |
+|        font/4 |                                                                                              |
+|        font/5 |                                                                                              |
+|        font/6 |                                                                                              |
+|        font/7 |                                                                                              |
+|        font/8 |                                                                                              |
+|        font/9 |                                                                                              |
+|  font/default | Resets font to default, if you could get it to change to begin with.                         |
+|       fraktur | I had this work on one terminal before, it's a gothic style font.  Alias for gothic.         |
+|      ~fraktur | Not fraktor, alias for ~gothic.  Also will stop italics.                                     |
+|         frame |                                                                                              |
+|        ~frame |                                                                                              |
 
 ## License
 
