@@ -1,0 +1,26 @@
+{
+  "name": "abcarroll/simple-ansi-escape",
+  "type": "library",
+  "keywords": [
+    "ansi",
+    "php-cli"
+  ],
+  "description": "Intuitively use ANSI escape sequences to add color and formatting to your php-cli scripts",
+  "homepage": "http://github.com/abcarroll/simple-ansi-escape",
+  "license": "BSD",
+  "authors": [
+    {
+      "name": "A.B. Carroll",
+      "email": "ben@hl9.net",
+      "homepage": "https://github.com/abcarroll"
+    }
+  ],
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SimpleAnsiEscape\\": "src/"
+    }
+  }
+}
