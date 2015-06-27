@@ -1,13 +1,13 @@
 <?php
-
 /*
-  * This file is a part of the simple-ansi-escape package.
+  * This file is a part of the simple-ansi-escape package:
+ * http://github.com/abcarroll/simple-ansi-escape
   *
-  * Copyright (c) 2013-2015 Armond B. Carroll <ben@hl9.net>
+  * Copyright (c) 2013-2015 Armond B. Carroll III <ben@hl9.net>
   * Distributed under the BSD License.  For full license text, please
   * view the LICENSE file that was distributed with this source code.
   *
-  * The entire escape code list is available here:
+  * The entire escape code list is available at:
   * http://en.wikipedia.org/wiki/ANSI_escape_code
   *
   * All descriptions of ANSI codes are taken DIRECTLY from this list.
@@ -31,7 +31,7 @@ class SimpleAnsiEscape {
     /**
      * @var array A complete list of shortcut codes to their ANSI byte equivalent.
      */
-    static public $ansi_map = [
+    static public $ansiMap = [
         // Reset / Normal - all attributes off
         'reset'        => 0,
         // Bold or increased intensity
@@ -155,7 +155,7 @@ class SimpleAnsiEscape {
     /**
      * @var array Trivial shortcuts and aliases that are handled before $ansi_map replacements.
      */
-    static public $preprocess_replace = [
+    static public $preprocessReplace = [
         // Note that the ',' => ';' replacement is hardcoded since it is only required when $format is passed
         // as a string, and by doing so we avoid redundant calls to str_replace()
 
@@ -169,8 +169,7 @@ class SimpleAnsiEscape {
         'double'        => 'dbl', // Would anyone really want to type doubleunderline?
         'uline'         => 'underline', // A shortcut that I might use
 
-        // Did women come up with these ANSI color codes?  Because ain't no man I ever heard of referred to any
-        // color as "cyan" or "magenta".  That's light blue and f**cking pink.
+        // For the brutes among us that wish to use less elegant names for colors.
         'lightblue'     => 'cyan',
         'pink'          => 'magenta',
         // Too bad fraktur is rarely supported
@@ -180,7 +179,7 @@ class SimpleAnsiEscape {
     /**
      *
      *
-     * @param string $format A comma or semi-colon separated string of formats to apply.  For example 'color/blue,bold'
+     * @param string $format      A comma or semi-colon separated string of formats to apply.  For example 'color/blue,bold'
      * @param string $wrap_around Optional parameter that indicates text to wrap in the supplied formatting.  If
      *                            supplied, the output will be <Formatting><Text Supplied><Reset>.
      *
@@ -188,7 +187,7 @@ class SimpleAnsiEscape {
      *                and a ANSI escape reset.
      */
     static public function ansiEscape($format = 'reset', $wrap_around = '') {
-        $preprocess_replace_keys = array_keys(self::$preprocess_replace);
+        $preprocess_replace_keys = array_keys(self::$preprocessReplace);
 
         // If it's not an array already, convert it to one
         if(!is_array($format)) {
@@ -197,8 +196,8 @@ class SimpleAnsiEscape {
         }
 
         foreach($format as &$f) {
-            $f = str_replace($preprocess_replace_keys, self::$preprocess_replace, trim($f));
-            $f = self::$ansi_map[ $f ];
+            $f = str_replace($preprocess_replace_keys, self::$preprocessReplace, trim($f));
+            $f = self::$ansiMap[$f];
         }
 
         if(!empty($wrap_around)) {
