@@ -179,7 +179,8 @@ class SimpleAnsiEscape {
     /**
      *
      *
-     * @param string $format      A comma or semi-colon separated string of formats to apply.  For example 'color/blue,bold'
+     * @param string $format      A comma or semi-colon separated string of formats to apply.  For example
+     *                            'color/blue,bold'
      * @param string $wrap_around Optional parameter that indicates text to wrap in the supplied formatting.  If
      *                            supplied, the output will be <Formatting><Text Supplied><Reset>.
      *

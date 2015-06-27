@@ -26,7 +26,17 @@ echo str_pad('Escape Alias', 15, ' ', STR_PAD_LEFT) . " | Demo Typeset Text\n";
 echo ' ' . str_repeat('-', 15) . '|' . str_repeat('-', strlen($testText)) . "\n";
 
 $sortedMap = esc::$ansiMap;
-ksort($sortedMap, SORT_NATURAL);
+// Sort disregarding special characters
+uksort($sortedMap, function($a, $b) {
+    if(substr($a, 0, 1) == '~') {
+        $negate = 1;
+    } else {
+        $negate = 0;
+    }
+    $a = preg_replace('/^[~]+/', '', $a);
+    $b = preg_replace('/^[~]+/', '', $b);
+    return strcasecmp($a, $b) + $negate;
+});
 $alreadyPrinted = [];
 foreach($sortedMap as $escapeAlias => $escapeInteger) {
     // Just prevents aliases from being printed more than once, has nothing to do with ansi escape codes particularly.
