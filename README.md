@@ -57,12 +57,12 @@ Note that you can not nest within the same function call, but it's easy to nest 
 // in the default terminal style.
 echo esc::ansiEscape(
     'text/green', 
-    "This is NOT how you " . ansi_esc('bold', 'nest') . " properly!"
+    "This is NOT how you " . esc::ansiEscape('bold', 'nest') . " properly!"
 );
 
 // This is CORRECT.  We're build the value in the proper linear order:
-echo esc::ansiEscape('text/green') . "This is how you ". ansi_esc('bold')
-    . "properly " . ansi_esc('~bold') . "next formatting." . ansi_esc();
+echo esc::ansiEscape('text/green') . "This is how you ". esc::ansiEscape('bold')
+    . "properly " . esc::ansiEscape('~bold') . "next formatting." . esc::ansiEscape();
 ```
 
 ### Always reset
@@ -87,7 +87,7 @@ Escape aliases are the heart of AnsiEscape.  There is a supplied script, in `ext
 will print a table much like the ones below, and show demo typeset instead so you can test your terminal's 
 capabilities.
 
-### Most important (compatible) escape alises:
+### Most important (compatible) escape aliases are seen in the table below.
 
    Escape Alias | Notes               
 |--------------:|:----------------------------------------------------------------------------------------------
