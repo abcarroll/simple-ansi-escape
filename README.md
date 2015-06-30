@@ -2,9 +2,9 @@ Simple ANSI Escape
 =======================
 
 Using ANSI escape codes, you can add color and formatting to terminals used by php5-cli. Simple-Ansi-Escape is a simple
-class to turn the obscure ANSI escape codes into friendly aliases that are easy to remember.
+class to turn the arcane ANSI escape codes into friendly aliases that are easy to remember.
 
-Simple-Ansi-Escape tries to be intuitive as possible and is very flexible in it's parameters.  As the name implies, it
+Simple-Ansi-Escape tries to be intuitive as possible and is very flexible in its parameters.  As the name implies, it
 is also very simple.  There is only one class definition that contains one static public method, `ansiEscape()`.
 Simple-Ansi-Escape supports most standard ANSI escape codes and some nonstandard ones.  It does not, however, support
 xterm-256 extensions (yet).
@@ -29,8 +29,8 @@ SimpleAnsiEscape::ansiEscape( [ array|string $formatting, [ $wrapAround = null ]
 ```
 
 `::ansiEscape()` tries to be very flexible in what you pass it.  The first parameter can be either an array with
-one or more array elements, or a string.  In it's array form, each array element should correspond to a single *escape
-alias* such as "color/yellow" in the previous example.  In it's string form, you can pass comma-, space- or 
+one or more array elements, or a string.  In its array form, each array element should correspond to a single *escape
+alias* such as "color/yellow" in the previous example.  In its string form, you can pass comma-, space- or 
 semicolon-delimited *escape aliases*.  Examples:
 
 ```php
@@ -51,7 +51,7 @@ You can also use `::ansiEscape()` with a single parameter to output only the esc
 parameter, no ANSI reset is called automatically.  While you need to call reset yourself (by calling `::ansiEscape()` 
 with no parameters), but it makes nesting a lot easier:
 
-Note that you can not nest within the same function call, but it's easy to nest using a couple of extra calls:
+Note that you cannot nest within the same function call, but it's easy to nest using a couple of extra calls:
 ```php
 // This is INCORRECT.  The inner escape will terminate formatting and ' properly' will be
 // in the default terminal style.
@@ -67,12 +67,12 @@ echo esc::ansiEscape('text/green') . "This is how you ". esc::ansiEscape('bold')
 
 ### Always reset
 
-A final note, when using ANSI escape codes, you are sending tiny textual sequences that are interpreted by your
-terminal.  The terminal has no knowledge when php5-cli terminates, therefore you must ensure you do not have any 
+A final note: when using ANSI escape codes, you are sending tiny textual sequences that are interpreted by your
+terminal.  The terminal has no knowledge of when php5-cli terminates; therefore, you must ensure you do not have any 
 open-ended escape codes, or your formatting will spill out into the terminal, even after your script terminates.
 
-If you have a colorful `PS1` shell environmental variable, you *may* not notice this, so please be mindful!  During
-development, if you make a mess of your terminal, simply run the `reset` shell command to start fresh.
+If you have a colorful `PS1` shell environmental variable, you *may* not notice this, so please be mindful.  During
+development, if you make a mess of your terminal, simply run the `reset` shell command to start over fresh.
 
 ## Formatting Syntax, Names
 
