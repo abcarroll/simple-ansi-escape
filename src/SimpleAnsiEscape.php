@@ -258,7 +258,7 @@ class SimpleAnsiEscape {
      * @return string                  The ANSI escape code sequence, and if $wrap around is supplied, followed by the
      *                                 supplied text and a ANSI escape reset.
      */
-    static public function ansiEscape($format = 'reset', $wrapAround = null)
+    static public function ansiEscape($format = 'reset', $wrapAround = '')
     {
         $preprocessReplacementKeys = array_keys(self::$preprocessReplace);
 

@@ -1,0 +1,31 @@
+### repository specific excludes
+# (none yet)
+
+### generic excludes
+# We are excluding all vendor/ directories here.
+# ** Change to '/vendor/' to only exclude in the git root **
+composer.phar
+composer.lock
+vendor/
+
+### ide related
+# JetBrains IDE
+.idea/
+*.iml
+*.iws
+# Netbeans IDE
+nbproject/
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+
+### os related
+# MacOS
+*.DS_Store
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+# Linux / Linux WM
+.Trash-*
