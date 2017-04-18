@@ -1,36 +1,60 @@
 <?php
-/*
-  * This file is a part of the simple-ansi-escape package:
- * http://github.com/abcarroll/simple-ansi-escape
-  *
-  * Copyright (c) 2013-2015 Armond B. Carroll III <ben@hl9.net>
-  * Distributed under the BSD License.  For full license text, please
-  * view the LICENSE file that was distributed with this source code.
-  *
-  * The entire escape code list is available at:
-  * http://en.wikipedia.org/wiki/ANSI_escape_code
-  *
-  * All descriptions of ANSI codes are taken DIRECTLY from this list.
-  * I claim no ownership to these descriptions.
-  * They are mostly unmodified, directly from Wikipedia.
-  * Please help improve the 'ANSI Escape Code' Wikipedia page.
-  */
-
 namespace SimpleAnsiEscape;
 
-    /**
-     * SimpleAnsiEscape is a simple PHP function called ansi_esc() that uses short sequences to be able to quickly
-     * and intuitively use ANSI escape codes (color, bold) in php-cli scripts
-     */
-
 /**
- * Class SimpleAnsiEscape
- * @package SimpleAnsiEscape
+ * SimpleAnsiEscape is a standalone php component enabling you to add simple command-line/shell coloring to your php apps.
+ *
+ * Refer to the supplied README.md for a complete overview of how ANSI escape sequences work in regards to resets, as
+ * well as a complete overview of available shortcut codes such as 'bg/blue' and 'underline'.
+ *
+ * To use, simply call the ansiEscape() method or ansi_esc() function.  Example use with namespaces:
+ *
+ *     <?php
+ *     use abcarroll\SimpleAnsiEscape as AnsiEsc; // At the top with the rest of your declarations
+ *
+ *     echo AnsiEsc::ansiEscape('text/blue', "This text will be blue! Yeah!"); // Within your application/script
+ *     ?>
+ *
+ * There are two ways to use SimpleAnsiEscape.  The above method is demonstrating specifying the wrap-around text.
+ * Alternatively, if you omit the second parameter, an OPEN-ENDED escape sequence will be given instead.  This means
+ * you MUST "reset" the sequence manually when you are ready to return to normal colorings.  Example:
+ *
+ *    <?php
+ *    echo AnsiEsc::ansiEscape('text/red') . "This text will be red.  It will continue to be red until you call reset";
+ *    echo AnsiEsc::ansiEscape(); // which, for simplicity, if you call ansiEscape() with no param, it is a shortcut for reset
+ *    echo AnsiEsc::ansiEscape('reset'); // or, the verbose way
+ *    ?>
+ *
+ * @copyright  Copyright (c) 2013-2017
+ * @author     A.B. Carroll III <ben@hl9.net>
+ * @license    BSD 2-Clause, see LICENSE.
+ *
+ * @link       https://github.com/abcarroll/simple-ansi-escape/
+ * @package    abcarroll\SimpleAnsiEscape
+ *
+ * @see        http://en.wikipedia.org/wiki/ANSI_escape_code - Many descriptions of the ANSI codes were taken *directly*
+ *             from the Wikipedia article.  I claim no ownership to these descriptions.  Please help improve the
+ *             'ANSI Escape Code' Wikipedia page.
+ *
+ * @version   1.0.1 - Cleaned up and greatly expanded upon phpdoc.
  */
 class SimpleAnsiEscape {
+
     /**
-     * @var array A complete list of shortcut codes to their ANSI byte equivalent.
+     * Our list of 'shortcut codes' to their ANSI byte equivalent expressed as an integer.
+     *
+     * The key part, called shortcut-codes are my own made-up names and are *not* a part of any sort of official
+     * standard.  This list has been stable and unchanged since 2013.
+     *
+     * Also note that several codes are specified more than once.  This is to allow more intuitive usage: for example,
+     * for conceal and reveal, you may use "conceal" to conceal the text and "~conceal" (not conceal) to reveal it.
+     *
+     * Alternatively, you may prefer to use 'conceal' and 'reveal'.  "reveal" and "~conceal" both map to the same ANSI
+     * code.
+     *
+     * @var array
      */
+
     static public $ansiMap = [
         // Reset / Normal - all attributes off
         'reset'        => 0,
@@ -139,7 +163,8 @@ class SimpleAnsiEscape {
         '~overline'    => 55,
         // 56–59 - Reserved
 
-        // Unsure how to handle these
+        // These are unusual, non-standard, and not-well-supported codes that were intentionally excluded.
+
         // 60 - ideogram underline or right side line - hardly ever supported
         // 61 - ideogram double underline or double line on the right side - hardly ever supported
         // 62 - ideogram overline or left side line - hardly ever supported
@@ -147,68 +172,133 @@ class SimpleAnsiEscape {
         // 64 - ideogram stress marking - hardly ever supported
         // 90–99 - Set foreground color, high intensity - aixterm (not in standard)
         // 100–109 - Set background color, high intensity - aixterm (not in standard)
-
-        // Stop ANSI Codes.
     ];
 
 
     /**
-     * @var array Trivial shortcuts and aliases that are handled before $ansi_map replacements.
+     * Additional generic shortcuts/aliases that are processed *before* the primary $ansiMap table (above).
+     *
+     * Defining the more generic aliases here, particularly '!' and '^', makes it so that we do not need to define
+     * a ridiculous amount of aliases in the primary $ansiMap table above.  Otherwise, for example, we would need to
+     * define each of '~bold', '!bold', and '^bold' individually.
+     *
+     * In addition to the below pre-processing, there is also a hard-coded ',' to ';' replacement within AnsiEscape()
+     * when $format is passed as a string (to avoid a redundant call to str_replace()).
+     *
+     * @var array
      */
     static public $preprocessReplace = [
-        // Note that the ',' => ';' replacement is hardcoded since it is only required when $format is passed
-        // as a string, and by doing so we avoid redundant calls to str_replace()
+        '!'             => '~',         // Logical NOT style (so !bold is equiv to ~bold)
+        '^'             => '~',         // Regex NOT Style (so ^bold is equiv to ~bold)
 
-        '!'             => '~', // Logical NOT style (so !bold is equiv to ~bold)
-        '^'             => '~', // Regex NOT Style (so ^bold is equiv to ~bold)
-
-        'color'         => 'text', // Very first time, I typed color/blue instead of text/blue
+        'color'         => 'text',      // I personally can never remember whether it is color/x or text/x for text-color.
 
         'strikethrough' => 'crossed',
         'strikethru'    => 'crossed',
-        'double'        => 'dbl', // Would anyone really want to type doubleunderline?
+        'double'        => 'dbl',       // Would anyone really want to type doubleunderline?
         'uline'         => 'underline', // A shortcut that I might use
 
-        // For the brutes among us that wish to use less elegant names for colors.
-        'lightblue'     => 'cyan',
+        'lightblue'     => 'cyan',      // For the brutes among us that wish to use less elegant names for colors.
         'pink'          => 'magenta',
-        // Too bad fraktur is rarely supported
-        'gothic'        => 'fraktur',
+
+        'gothic'        => 'fraktur',  // Fraktur is rarely supported (and it's a shame).
     ];
 
     /**
+     * Returns the magic bytes to produce the desired '$format' of coloring & formatting.  You need to print this value.
      *
+     * There are three distinct behaviours for ansiEscape():
      *
-     * @param string $format      A comma or semi-colon separated string of formats to apply.  For example
-     *                            'color/blue,bold'
-     * @param string $wrap_around Optional parameter that indicates text to wrap in the supplied formatting.  If
-     *                            supplied, the output will be <Formatting><Text Supplied><Reset>.
+     *  - With no parameters, it is identical to calling ansiEscape('reset') and will reset *all* formatting up until
+     *    that point.
+     *  - With the single, first parameter, it will return the open-ended ANSI escape codes and nothing else.  You will
+     *    need to follow it with some text, as well as manage the resetting/negating the formatting afterwards.
+     *  - With both parameters specified, it will return the wrapAround parameter, wrapped in the ANSI escape sequence
+     *    and a reset, so that you do not have to manage resetting it yourself.  This is the simplest way to use
+     *    ansiEscape().
      *
-     * @return string The ANSI escape code sequence, and if $wrap around is supplied, followed by the supplied text
-     *                and a ANSI escape reset.
+     * The first parameter may be either a comma- and/or semi-colon delimited list of shortcuts, or it also may be an
+     * array with one shortcut per element.  For example, "text/blue, bg/red; bold" and ['text/blue', 'bg/red', 'bold']
+     * will produce exactly equivalent results.
+     *
+     * *TEXT & BACKGROUND COLOR SHORTCUT CHEAT SHEET:*
+     *
+     * Text and bg colors both use the same set of colors:
+     *
+     * - black  white  red  green  blue  yellow  magenta  cyan
+     * - and "default" to negate (text/default and bg/default, respectively)
+     *
+     * If you can remember these colors, then just use 'text/(color)' to change the text color and 'bg/(color)' to
+     * change the background color.  Remember, once you change either, you can use 'negative' to flip them or 'default'
+     * to go back to the user's terminal default.  Of course, a full reset will also return to default (along with
+     * any other text decorations or formatting you may have done).
+     *
+     * Also, if you are writing a widely used application, you should set the background color if setting the text to
+     * a high contrast color like black or white -- some users may have very light or very dark default terminal bg
+     * colors.
+     *
+     * *COMMON, WELL-SUPPORTED TEXT DECORATION:*
+     *
+     * - bold          (~bold to negate)
+     * - underline     (~underline to negate)
+     * - strikethrough (~strikethrough to negate, may be abbrv. 'strikethru' or 'crossed')
+     * - faint         (~faint to negate)
+     * - negative      (~negative or 'positive' to negate -- flips text/bg color)
+     * - conceal       (~conceal or 'reveal' to negate -- hides text until negated)
+     *
+     * @param string|array $format     The desired format using the documented shortcuts.  To specify more than one
+     *                                 type of formatting at once, you may pass several formats as a comma or semi-colon
+     *                                 separated list, or even as an array (with one 'shortcut' per element).
+     *
+     * @param string $wrapAround       Optional parameter that indicates the text to wrap in the supplied formatting.
+     *                                 If supplied, the output will be <Formatting><Text Supplied><Reset>.  If omitted,
+     *                                 then an open-ended code sequence will be given instead and you will need to manage
+     *                                 the resetting/negating yourself.
+     *
+     * @return string                  The ANSI escape code sequence, and if $wrap around is supplied, followed by the
+     *                                 supplied text and a ANSI escape reset.
      */
-    static public function ansiEscape($format = 'reset', $wrap_around = '') {
-        $preprocess_replace_keys = array_keys(self::$preprocessReplace);
+    static public function ansiEscape($format = 'reset', $wrapAround = null)
+    {
+        $preprocessReplacementKeys = array_keys(self::$preprocessReplace);
 
         // If it's not an array already, convert it to one
         if(!is_array($format)) {
-            $format = str_replace(',', ';', $format); // Allows us to use comma as delimiter, see note above
+            // Allow the use of a comma OR a semi-colon as a delimiter.
+            $format = str_replace(',', ';', $format);
             $format = explode(';', $format);
         }
 
         foreach($format as &$f) {
-            $f = str_replace($preprocess_replace_keys, self::$preprocessReplace, trim($f));
+            $f = str_replace($preprocessReplacementKeys, self::$preprocessReplace, trim($f));
             $f = self::$ansiMap[$f];
         }
 
-        if(!empty($wrap_around)) {
-            $wrap_around .= self::AnsiEscape();
+        if(!empty($wrapAround)) {
+            $wrapAround .= self::ansiEscape();
         }
 
-        return "\033[" . implode(';', $format) . "m$wrap_around";
+        // This is basically all there is to it.
+        return "\033[" . implode(';', $format) . "m$wrapAround";
     }
 }
 
-function ansi_esc($format = 'reset', $wrap_around = '') {
-    return \SimpleAnsiEscape\SimpleAnsiEscape::AnsiEscape($format, $wrap_around);
+/**
+ * Returns the human-readable '$format' of shortcuts as actual ANSI escape sequences to beautify your console.
+ *
+ * ansi_esc() is a sugar-syntax helper function to call the SimpleAnsiEscape::ansiEscape() statically.  Refer to the
+ * documentation for SimpleAnsiEscape::ansiEscape() for much more detailed documentation.
+ *
+ * @param string|array $format      The format, as a comma/semi-colon delimited list, or as an array with one shortcut
+ *                                  code (such as 'text/blue') each element.
+ *
+ * @param string       $wrapAround  If specified, changes the behaviour of AnsiEscape() so that the formatting is
+ *                                  wrapped-around the $wrapAround string.  Otherwise, an open-ended sequence is
+ *                                  returned that you will likely need to reset/negate manually.
+ *
+ * @return string                   The ANSI escape code sequence as a string -- and perhaps, the $wrapAround string
+ *                                  followed by a ANSI reset code, if you specified the $wrapAround parameter.
+ */
+function ansi_esc($format = 'reset', $wrapAround = '') {
+    return SimpleAnsiEscape::ansiEscape($format, $wrapAround);
 }
